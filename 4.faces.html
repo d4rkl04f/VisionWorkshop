@@ -1,0 +1,65 @@
+<html>
+<head>
+
+<title>Face Detection</title>
+
+<style>
+body {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+video {
+  position: absolute;
+  visibility: hidden;
+}
+</style>
+
+</head>
+<body>
+
+<!-- 1. Video and canvas elements -->
+<video width="320" height="240" preload autoplay loop muted></video>
+<canvas width="320" height="240"></canvas>
+
+<!-- 2. Tracking library -->
+<script src="lib/tracking-min.js"></script>
+<script src="lib/data/face-min.js"></script>
+
+<script>
+class Faces {
+  constructor() {
+    // 3. Element references
+    this.video = document.querySelector( 'video' );
+    this.canvas = document.querySelector( 'canvas' );
+    this.context = this.canvas.getContext( '2d' );
+
+    // 4. Setup tracking
+    this.tracker = new tracking.ObjectTracker( 'face' );
+    this.tracker.setInitialScale( 4 );
+    this.tracker.setStepSize( 2 );
+    this.tracker.setEdgesDensity( 0.1 );
+
+    // 5. Start tracking
+    tracking.track( this.video, this.tracker, {camera: true} );
+    
+    // 6. Draw detected faces
+    this.tracker.on( 'track', ( event ) => {
+      this.context.drawImage( this.video, 0, 0, 320, 240 );
+      event.data.forEach( ( rect ) => {
+        this.context.strokeStyle = 'yellow';
+        this.context.strokeRect( rect.x, rect.y, rect.width, rect.height );        
+      } );
+    } );
+  }
+}
+
+let app = new Faces();
+</script>
+
+</body>
+</html>

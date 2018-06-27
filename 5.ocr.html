@@ -1,0 +1,77 @@
+<html>
+<head>
+
+<title>OCR</title>
+
+<style>
+body {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+img {
+  position: absolute;
+  visibility: hidden;  
+}
+
+video {
+  position: absolute;
+  visibility: hidden;
+}
+</style>
+
+</head>
+<body>
+
+<video width="640" height="480"></video>
+<canvas width="640" height="480"></canvas>
+<img>
+
+<script src='https://cdn.rawgit.com/naptha/tesseract.js/1.0.10/dist/tesseract.js'></script>
+
+<script>
+class Reader {
+  constructor() {
+    this.video = document.querySelector( 'video' );
+    this.canvas = document.querySelector( 'canvas' );
+    this.canvas.addEventListener( 'click', ( evt ) => this.doCanvasClick( evt ) );
+    this.context = this.canvas.getContext( '2d' );
+    this.sample = document.querySelector( 'img' );
+    this.sample.addEventListener( 'load', ( evt ) => this.doSampleLoad( evt ) );
+
+    navigator.mediaDevices.getUserMedia( {audio: false, video: true} )
+    .then( ( stream ) => {
+      this.video.srcObject = stream;
+      this.video.play();
+      this.detect();
+    } ).catch( ( error ) => {
+      console.log( error );
+    } );            
+  }
+
+  detect() {
+    this.context.drawImage( this.video, 0, 0, this.canvas.width, this.canvas.height );
+    requestAnimationFrame( () => { return this.detect(); } );     
+  }
+
+  doCanvasClick( evt ) {
+    this.sample.src = this.canvas.toDataURL();
+  }
+
+  doSampleLoad( evt ) {
+    Tesseract.recognize( this.sample )
+    .then( ( result ) => {
+      console.log( result );
+    } );
+  }
+}
+
+let app = new Reader();
+</script>
+
+</body>
+</html>
