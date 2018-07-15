@@ -1,0 +1,61 @@
+<html>
+<head>
+
+<title>Barcodes</title>
+
+<style>
+body {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+</style>
+
+</head>
+<body>
+
+<video id="video" width="600" height="400"></video>
+
+<script src="../lib/zxing.min.js"></script>
+
+<script>
+class Barcode {
+  constructor() {
+    // this.reader = new ZXing.BrowserQRCodeReader(); 
+
+    this.reader = new ZXing.BrowserBarcodeReader();
+    this.scan();
+
+    /*
+    this.reader.getVideoInputDevices()
+    .then( ( devices ) => {
+      this.reader.decodeFromInputVideoDevice( devices[0].deviceId, 'video' )
+      .then( ( result ) => {
+        console.log(result)
+      } ).catch( ( err ) => {
+        console.error( err )
+      } );      
+    } );
+    */
+  }
+
+  scan() {
+    this.reader.decodeFromInputVideoDevice( undefined, 'video' )
+    .then( ( result ) => this.found( result ) );    
+  }
+
+  found( result ) {
+    console.log( result );
+    this.reader.reset();
+    this.scan();
+  }
+}
+
+let app = new Barcode();
+</script>
+
+</body>
+</html>
