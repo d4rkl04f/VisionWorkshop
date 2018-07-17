@@ -1,0 +1,81 @@
+<html>
+<head>
+
+<title>Drag and Drop</title>
+
+<style>
+body {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+canvas {
+  border: solid 1px lightgrey;
+}
+
+img {
+  position: absolute;
+  visibility: hidden;    
+}
+</style>
+
+</head>
+<body>
+
+<canvas width="640" height="480"></canvas>
+<img>
+
+<script>
+class Reader {
+  constructor() {
+    this.io = new FileReader();
+    this.io.addEventListener( 'load', ( evt ) => this.doFileLoad( evt ) );
+
+    this.canvas = document.querySelector( 'canvas' );
+    this.canvas.addEventListener( 'dragover', ( evt ) => this.doDragOver( evt ) );
+    this.canvas.addEventListener( 'drop', ( evt ) => this.doDragDrop( evt ) );    
+    this.context = this.canvas.getContext( '2d' );
+    this.sample = document.querySelector( 'img' );
+    this.sample.addEventListener( 'load', ( evt ) => this.doImageLoad( evt ) );
+  }
+
+  doDragDrop( evt ) {
+    evt.preventDefault();
+    this.io.readAsDataURL( evt.dataTransfer.files[0] );
+  }
+
+  doDragOver( evt ) {
+    evt.preventDefault();
+  }
+
+  doFileLoad( evt ) {
+    this.sample.src = this.io.result;
+  }
+
+  doImageLoad( evt ) {
+    // TODO: Account for portrait images 
+    // TODO: Taller on width than height
+
+    let ratio = this.sample.clientHeight / this.sample.clientWidth;
+    let scaled = this.canvas.clientWidth * ratio;
+
+    this.context.clearRect( 0, 0, this.canvas.clientWidth, this.canvas.clientHeight );
+    this.context.drawImage( 
+      this.sample, 
+      0, 
+      Math.round( ( this.canvas.clientHeight - scaled ) / 2 ), 
+      this.canvas.clientWidth, 
+      scaled 
+    );
+  }
+}
+
+let app = new Reader();
+</script>
+
+</body>
+</html>
