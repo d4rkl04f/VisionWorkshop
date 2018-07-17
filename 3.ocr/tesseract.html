@@ -52,7 +52,8 @@ class Reader {
       this.video.srcObject = stream;
       this.video.play();
       this.detect();
-    } ).catch( ( error ) => {
+    } )
+    .catch( ( error ) => {
       console.log( error );
     } );            
   }

@@ -33,7 +33,8 @@ class Camera {
       // Put camera stream into video element
       this.video.srcObject = stream;
       this.video.play();
-    } ).catch( ( error ) => {
+    } )
+    .catch( ( error ) => {
       console.log( error );
     } );        
   }

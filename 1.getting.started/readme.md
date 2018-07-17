@@ -27,7 +27,8 @@ For the purposes of getting started, in this workshop, we are going to make the 
     .then( ( stream ) => {
       this.video.srcObject = stream;
       this.video.play();
-    } ).catch( ( error ) => {
+    } )
+    .catch( ( error ) => {
       console.log( error );
     } );
 
@@ -50,7 +51,8 @@ The context object is really what makes canvas work - it is where all the drawin
       this.video.srcObject = stream;
       this.video.play();
       this.detect();
-    } ).catch( ( error ) => {
+    } )
+    .catch( ( error ) => {
       console.log( error );
     } );
 

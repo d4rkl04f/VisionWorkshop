@@ -95,7 +95,8 @@ Before calling "getUserMedia()" we will create an instance of the tracker at a s
       this.tracker.start( this.video );
       
       this.detect();
-    } ).catch( ( error ) => {
+    } )
+    .catch( ( error ) => {
       console.log( error );
     } );
 

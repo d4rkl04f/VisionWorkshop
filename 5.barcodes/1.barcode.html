@@ -1,0 +1,50 @@
+<html>
+<head>
+
+<title>Barcode</title>
+
+<style>
+body {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+</style>
+
+</head>
+<body>
+
+<!-- Web camera stream -->
+<video width="640" height="480"></video>
+
+<!-- Zebra Crossing library -->
+<script src="../lib/zxing.min.js"></script>
+
+<script>
+class Barcode {
+  constructor() {
+    // Video reference
+    this.video = document.querySelector( 'video' );
+
+    // Instantiate barcode reader
+    this.reader = new ZXing.BrowserBarcodeReader();
+
+    // Detect barcode in video stream
+    this.reader.decodeFromInputVideoDevice( undefined, this.video )
+    .then( ( result ) => {
+      console.log( result );
+    } )
+    .catch( ( err ) => {
+      console.error( err );
+    } );
+  }
+}
+
+let app = new Barcode();
+</script>
+
+</body>
+</html>

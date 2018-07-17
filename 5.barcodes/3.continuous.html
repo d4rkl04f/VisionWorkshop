@@ -1,7 +1,7 @@
 <html>
 <head>
 
-<title>Face Alignment</title>
+<title>Continous Scanning</title>
 
 <style>
 body {
@@ -13,64 +13,68 @@ body {
   padding: 0;
 }
 
-video {
+canvas {
   position: absolute;
   visibility: hidden;
-}  
+}
 </style>
 
 </head>
 <body>
 
-<!-- Document elements -->
-<video width="640" height="480" preload autoplay loop muted></video>
+<!-- Web camera stream -->
+<video width="640" height="480"></video>
+
+<!-- Offscreen capture -->
 <canvas width="640" height="480"></canvas>
 
-<!-- Feature detection library -->
-<script src="../lib/clmtracker.js"></script>
+<!-- Zebra Crossing library -->
+<script src="../lib/zxing.min.js"></script>
 
 <script>
-class Features {
+class Barcode {
   constructor() {
-    // Element references    
+    // Instantiate barcode reader
+    this.reader = new ZXing.BrowserBarcodeReader();
+    
+    // Element references
     this.video = document.querySelector( 'video' );
     this.canvas = document.querySelector( 'canvas' );
     this.context = this.canvas.getContext( '2d' );
 
-    // Instantiate tracker
-    this.tracker = new clm.tracker();
-
+    // Put web camera stream into video element
     navigator.mediaDevices.getUserMedia( {audio: false, video: true} )
     .then( ( stream ) => {
       this.video.srcObject = stream;
       this.video.play();
 
-      // Start tracking
-      this.tracker.init();
-      this.tracker.start( this.video );
-
-      // Draw tracking results
+      // Start scanning
       this.detect();
     } )
     .catch( ( error ) => {
       console.log( error );
-    } );        
+    } );            
   }
 
   detect() {
+    // Capture video to canvas
     this.context.drawImage( this.video, 0, 0, this.canvas.width, this.canvas.height );
 
-    // Check if any faces were found
-    if( this.tracker.getCurrentPosition() ) {
-      // Draw the detected alignment
-      this.tracker.draw( this.canvas );
-    }
-
-    requestAnimationFrame( () => { return this.detect(); } );     
+    // Scan for barcode from canvas
+    this.reader.decodeFromImage( undefined, this.canvas.toDataURL() )
+    .then( ( result ) => {
+      console.log( result );
+    } )
+    .catch( ( err ) => {
+      console.log( err );
+    } );
+    
+    // Keep scanning
+    requestAnimationFrame( () => { return this.detect(); } );
   }
 }
 
-let app = new Features();
+let app = new Barcode();
 </script>
 
 </body>
