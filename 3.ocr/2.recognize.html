@@ -29,6 +29,8 @@ img {
 <canvas width="640" height="480"></canvas>
 <img>
 
+<script src='https://cdn.rawgit.com/naptha/tesseract.js/1.0.10/dist/tesseract.js'></script>
+
 <script>
 class Reader {
   constructor() {
@@ -43,13 +45,14 @@ class Reader {
     this.sample.addEventListener( 'load', ( evt ) => this.doImageLoad( evt ) );
   }
 
-  draw() {
+  draw( words = [] ) {
     // TODO: Account for portrait images 
     // TODO: Taller on width than height
 
     let ratio = this.sample.clientHeight / this.sample.clientWidth;
     let scaled = this.canvas.clientWidth * ratio;
 
+    // Dropped image
     this.context.clearRect( 0, 0, this.canvas.clientWidth, this.canvas.clientHeight );
     this.context.drawImage( 
       this.sample, 
@@ -58,6 +61,36 @@ class Reader {
       this.canvas.clientWidth, 
       scaled 
     );
+
+    for( let w = 0; w < words.length; w++ ) {
+      if( words[w].confidence < Reader.CONFIDENCE ) {
+        continue;
+      }
+
+      // Bounding box
+      this.context.strokeStyle = 'yellow';          
+      this.context.strokeRect( 
+        words[w].bbox.x0,
+        words[w].bbox.y0,
+        words[w].bbox.x1 - words[w].bbox.x0,
+        words[w].bbox.y1 - words[w].bbox.y0
+      );
+
+      // Baseline
+      this.context.strokeStyle = 'red';
+      this.context.beginPath();
+      this.context.moveTo( 
+        words[w].baseline.x0,
+        words[w].baseline.y0
+      );
+      this.context.lineTo( 
+        words[w].baseline.x1,
+        words[w].baseline.y1            
+      );
+      this.context.stroke();
+
+      console.log( words[w].text );
+    }
   }
 
   doDragDrop( evt ) {
@@ -74,9 +107,15 @@ class Reader {
   }
 
   doImageLoad( evt ) {
-    this.draw();
+    Tesseract.recognize( this.sample, {lang: 'eng'} )
+    .then( ( result ) => {      
+      console.log( result );    
+      this.draw( result.words );
+    } );
   }
 }
+
+Reader.CONFIDENCE = 0.70;
 
 let app = new Reader();
 </script>
