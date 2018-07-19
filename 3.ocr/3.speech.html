@@ -35,6 +35,9 @@ img {
 <!-- Optical character recognition library -->
 <script src='https://cdn.rawgit.com/naptha/tesseract.js/1.0.10/dist/tesseract.js'></script>
 
+<!-- Watson speech library -->
+<script src="../lib/watson-speech.min.js"></script>
+
 <script>
 class Reader {
   constructor() {
@@ -50,9 +53,22 @@ class Reader {
     this.context = this.canvas.getContext( '2d' );
     this.sample = document.querySelector( 'img' );
     this.sample.addEventListener( 'load', ( evt ) => this.doImageLoad( evt ) );
+
+    // Store Watson authorization token
+    this.token = null;
+
+    // Get Watson authorization token
+    fetch( Reader.WATSON_TOKEN )
+    .then( ( result ) => { return result.json(); } )
+    .then( ( data ) => {
+      this.token = data.body;
+    } );    
   }
 
   draw( words = [] ) {
+    // Output for speech
+    let phrase = '';
+
     // Calculate proportions
     // Sizing and placement
     let aspect = this.canvas.clientWidth / this.sample.clientWidth;
@@ -91,8 +107,17 @@ class Reader {
       );
       this.context.stroke();
 
+      // Assemble output speech
+      phrase = phrase + ' ' + words[w].text;
+
       console.log( words[w].text );
     }
+
+    // Have Watson speak the results
+    WatsonSpeech.TextToSpeech.synthesize( {
+      text: phrase,
+      token: this.token
+    } );
   }
 
   doDragDrop( evt ) {
@@ -129,6 +154,7 @@ class Reader {
 
 // Constants
 Reader.CONFIDENCE = 0.70;
+Reader.WATSON_TOKEN = 'https://openwhisk.ng.bluemix.net/api/v1/web/krhoyt%40us.ibm.com_dev/watson/tts.token.json';
 
 let app = new Reader();
 </script>
