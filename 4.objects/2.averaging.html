@@ -1,7 +1,7 @@
 <html>
 <head>
 
-<title>Color Averaging</title>
+<title>Color Detection</title>
 
 <style>
 body {
@@ -31,6 +31,12 @@ class Follower {
   constructor() {
     // Color to track
     this.color = null;
+
+    // Pixels from canvas
+    this.pixels = null;
+
+    // Bounding boxes
+    this.swatches = null;
 
     // Sampling or finding
     this.state = Follower.STATE_SAMPLE;
@@ -62,82 +68,121 @@ class Follower {
 
   detect() {
     // Put video onto canvas
-    this.context.drawImage( this.video, 0, 0, this.canvas.clientWidth, this.canvas.clientHeight );
+    this.context.drawImage( 
+      this.video, 
+      0, 
+      0, 
+      this.canvas.clientWidth, 
+      this.canvas.clientHeight 
+    );
 
     // Get the pixels from the canvas
-    let pixels = this.context.getImageData( 0, 0, this.canvas.clientWidth, this.canvas.clientHeight );
+    this.pixels = this.context.getImageData( 
+      0, 
+      0, 
+      this.canvas.clientWidth, 
+      this.canvas.clientHeight 
+    );
 
-    // Bounding box
-    let view = {
+    // Default placement
+    // Center of canvas
+    this.swatches = [{
       x: this.canvas.clientWidth / 2,
       y: this.canvas.clientHeight / 2
-    };
+    }];
 
     if( this.state === Follower.STATE_SAMPLE ) {
-      // Get color at center
-      this.color = {
-        red: pixels.data[this.center],
-        green: pixels.data[this.center + 1],
-        blue: pixels.data[this.center + 2]
-      };
-
-      // Show color on canvas
-      this.context.fillStyle = `rgb( ${this.color.red}, ${this.color.green}, ${this.color.blue} )`;
-      this.context.fillRect(
-        this.canvas.clientWidth - Follower.VIEW_SIZE - Follower.INSET,
-        this.canvas.clientHeight - Follower.VIEW_SIZE - Follower.INSET,
-        Follower.VIEW_SIZE,
-        Follower.VIEW_SIZE
-      );
+      this.sample();
     } else if( this.state === Follower.STATE_FIND ) {
-      // Average matches
-      let average = {
-        x: 0,
-        y: 0,
-        count: 0
-      };
-
-      for( let y = 0; y < this.canvas.clientHeight; y++ ) {
-        for( let x = 0; x < this.canvas.clientWidth; x++ ) {
-          // Calculate pixel location
-          let index = ( ( y * this.canvas.clientWidth ) + x ) * 4;
-
-          // Get color channels
-          let sample = {  
-            red: pixels.data[index],
-            green: pixels.data[index + 1],
-            blue: pixels.data[index + 2]
-          };          
-
-          // Calculate distance
-          // Euclidean does not reflect perception
-          let distance = Math.sqrt(
-            Math.pow( ( this.color.red - sample.red ), 2 ) + 
-            Math.pow( ( this.color.green - sample.green ), 2 ) + 
-            Math.pow( ( this.color.blue - sample.blue ), 2 )                        
-          );          
-
-          // If value in threshold
-          // Incremenmt averaging
-          if( distance < Follower.THRESHOLD ) {
-            average.x = average.x + x;
-            average.y = average.y + y;
-            average.count = average.count + 1;
-          }
-        }
-      }
-
-      // Perform averaging for view coordinates
-      view.x = Math.round( average.x / average.count );
-      view.y = Math.round( average.y / average.count );
+      this.find();
     }
 
-    // Draw highlight
-    this.context.strokeStyle = 'red';          
-    this.context.strokeRect( view.x - ( Follower.VIEW_SIZE / 2 ), view.y - ( Follower.VIEW_SIZE / 2 ), Follower.VIEW_SIZE, Follower.VIEW_SIZE );      
+    // Draw swatches
+    for( let s = 0; s < this.swatches.length; s++ ) {
+      this.context.strokeStyle = 'red';          
+      this.context.strokeRect( 
+        this.swatches[s].x - ( Follower.VIEW_SIZE / 2 ), 
+        this.swatches[s].y - ( Follower.VIEW_SIZE / 2 ), 
+        Follower.VIEW_SIZE, 
+        Follower.VIEW_SIZE 
+      ); 
+    }     
 
     // Keep going
     requestAnimationFrame( () => { return this.detect(); } ); 
+  }
+
+  find() {
+    // Average matches
+    let average = {
+      x: 0,
+      y: 0,
+      count: 0
+    };
+
+    // Reset found areas
+    this.swatches = [];
+
+    for( let y = 0; y < this.canvas.clientHeight; y++ ) {
+      for( let x = 0; x < this.canvas.clientWidth; x++ ) {
+        // Calculate pixel location
+        let index = ( ( y * this.canvas.clientWidth ) + x ) * 4;
+
+        // Get color channels
+        let sample = {  
+          red: this.pixels.data[index],
+          green: this.pixels.data[index + 1],
+          blue: this.pixels.data[index + 2]
+        };          
+
+        // Calculate distance
+        // Euclidean does not reflect perception
+        let distance = Math.sqrt(
+          Math.pow( ( this.color.red - sample.red ), 2 ) + 
+          Math.pow( ( this.color.green - sample.green ), 2 ) + 
+          Math.pow( ( this.color.blue - sample.blue ), 2 )                        
+        );          
+
+        // Color distance under threshold
+        // Increase coordinate values
+        if( distance < Follower.THRESHOLD ) {
+          average.x = average.x + x;
+          average.y = average.y + y;
+          average.count = average.count + 1;          
+        }
+      }
+    }  
+
+    // Perform averaging for view coordinates
+    this.swatches.push( {
+      x: Math.round( average.x / average.count ),
+      y: Math.round( average.y / average.count )
+    } );
+  }
+
+  sample() {
+    // Bounding box
+    // Centered on canvas
+    this.swatches = [{
+      x: this.canvas.clientWidth / 2,
+      y: this.canvas.clientHeight / 2
+    }];
+
+    // Get color at center
+    this.color = {
+      red: this.pixels.data[this.center],
+      green: this.pixels.data[this.center + 1],
+      blue: this.pixels.data[this.center + 2]
+    };
+
+    // Show color on canvas
+    this.context.fillStyle = `rgb( ${this.color.red}, ${this.color.green}, ${this.color.blue} )`;
+    this.context.fillRect(
+      this.canvas.clientWidth - Follower.VIEW_SIZE - Follower.INSET,
+      this.canvas.clientHeight - Follower.VIEW_SIZE - Follower.INSET,
+      Follower.VIEW_SIZE,
+      Follower.VIEW_SIZE
+    );    
   }
 
   doKeyPress( evt ) {
