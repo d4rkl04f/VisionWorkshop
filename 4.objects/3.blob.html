@@ -84,13 +84,6 @@ class Follower {
       this.canvas.clientHeight 
     );
 
-    // Default placement
-    // Center of canvas
-    this.swatches = [{
-      x: this.canvas.clientWidth / 2,
-      y: this.canvas.clientHeight / 2
-    }];
-
     if( this.state === Follower.STATE_SAMPLE ) {
       this.sample();
     } else if( this.state === Follower.STATE_FIND ) {
@@ -101,10 +94,10 @@ class Follower {
     for( let s = 0; s < this.swatches.length; s++ ) {
       this.context.strokeStyle = 'red';          
       this.context.strokeRect( 
-        this.swatches[s].x - ( Follower.VIEW_SIZE / 2 ), 
-        this.swatches[s].y - ( Follower.VIEW_SIZE / 2 ), 
-        Follower.VIEW_SIZE, 
-        Follower.VIEW_SIZE 
+        this.swatches[s].x, 
+        this.swatches[s].y, 
+        this.swatches[s].right - this.swatches[s].x, 
+        this.swatches[s].bottom - this.swatches[s].y 
       ); 
     }     
 
@@ -146,30 +139,54 @@ class Follower {
         // Color distance under threshold
         // Increase coordinate values
         if( distance < Follower.THRESHOLD ) {
-          for( let s = 0; s < this.swatches.length; s++ ) {
-            // let middle =  
+          let found = false;
+          let index = 0;
+
+          // Look through the swatches
+          for( index = 0; index < this.swatches.length; index++ ) {
+            // Center of the swatch area
+            let center = {
+              x: ( this.swatches[index].x + this.swatches[index].right ) / 2,
+              y: ( this.swatches[index].y + this.swatches[index].bottom ) / 2
+            };
+
+            // Distance to current pixel
+            distance = Math.sqrt(
+              Math.pow( center.x  - x, 2 ) +
+              Math.pow( center.y - y, 2 )
+            );
+
+            // Close to center of swatch
+            if( distance < Follower.DISTANCE ) {
+              found = true;
+              break;
+            }
           }
 
-          average.x = average.x + x;
-          average.y = average.y + y;
-          average.count = average.count + 1;          
+          if( found ) {
+            // Add to existing swatch            
+            this.swatches[index].x = Math.min( this.swatches[index].x, x );
+            this.swatches[index].y = Math.min( this.swatches[index].y, y );
+            this.swatches[index].right = Math.max( this.swatches[index].right, x );
+            this.swatches[index].bottom = Math.max( this.swatches[index].bottom, y );              
+            found = false;
+          } else {
+            // Create new swatch
+            this.swatches.push( {x: x, y: y, right: x, bottom: y} );
+          }
         }
       }
     }  
-
-    // Perform averaging for view coordinates
-    this.swatches.push( {
-      x: Math.round( average.x / average.count ),
-      y: Math.round( average.y / average.count )
-    } );
   }
 
   sample() {
-    // Bounding box
-    // Centered on canvas
+    // Default placement
+    // Center of canvas
     this.swatches = [{
-      x: this.canvas.clientWidth / 2,
-      y: this.canvas.clientHeight / 2
+      x: Math.round( ( this.canvas.clientWidth - Follower.VIEW_SIZE ) / 2 ),
+      y: Math.round( ( this.canvas.clientHeight - Follower.VIEW_SIZE ) / 2 ),      
+      right: Math.round( ( this.canvas.clientWidth - Follower.VIEW_SIZE ) / 2 ) + Follower.VIEW_SIZE,      
+      bottom: Math.round( ( this.canvas.clientHeight - Follower.VIEW_SIZE ) / 2 ) + Follower.VIEW_SIZE
     }];
 
     // Get color at center
@@ -203,11 +220,11 @@ class Follower {
 }
 
 // Constants
-Follower.DISTANCE = 50;
+Follower.DISTANCE = 100;
 Follower.INSET = 16;
 Follower.STATE_FIND = 2;
 Follower.STATE_SAMPLE = 1;
-Follower.THRESHOLD = 20;
+Follower.THRESHOLD = 30;
 Follower.VIEW_SIZE = 20;
 
 let app = new Follower();
