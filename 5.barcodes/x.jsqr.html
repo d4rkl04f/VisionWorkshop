@@ -1,0 +1,87 @@
+<html>
+<head>
+
+<title>QR Codes</title>
+
+<style>
+body {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+video {
+  position: absolute;
+  visibility: hidden;
+}
+</style>
+
+</head>
+<body>
+
+<!-- Document elements -->
+<video width="640" height="480"></video>
+<canvas width="640" height="480"></canvas>
+
+<!-- Image processing library -->
+<script src="../lib/jsqr.js"></script>
+
+<script>
+class Barcode {
+  constructor() {
+    // Element references
+    this.canvas = document.querySelector( 'canvas' );
+    this.context = this.canvas.getContext( '2d' );
+    this.video = document.querySelector( 'video' );
+
+    // Camera stream
+    navigator.mediaDevices.getUserMedia( {audio: false, video: true} )
+    .then( ( stream ) => {
+      this.video.srcObject = stream;
+      this.video.play();
+      this.detect();
+    } )
+    .catch( ( error ) => {
+      console.log( error );
+    } );        
+  }
+
+  detect() {
+    // Copy video frame to canvas
+    this.context.drawImage( 
+      this.video, 
+      0, 
+      0, 
+      this.canvas.clientWidth, 
+      this.canvas.clientHeight 
+    );
+    
+    // Get the pixels from the canvas
+    let pixels = this.context.getImageData( 
+      0, 
+      0, 
+      this.canvas.clientWidth, 
+      this.canvas.clientHeight 
+    );
+
+    // Find QR code
+    let code = jsQR( pixels.data, this.canvas.clientWidth, this.canvas.clientHeight );
+
+    // Found
+    if( code ) {
+      console.log( code.data );
+    }
+
+    // Keep going
+    requestAnimationFrame( () => { return this.detect(); } );     
+  }
+}
+
+let app = new Barcode();
+</script>
+
+</body>
+</html>
