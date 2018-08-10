@@ -23,8 +23,8 @@ video {
 <body>
 
 <!-- Video and canvas elements -->
-<video width="320" height="240" preload autoplay loop muted></video>
-<canvas width="320" height="240"></canvas>
+<video width="640" height="480" preload autoplay loop muted></video>
+<canvas width="640" height="480"></canvas>
 
 <!-- Tracking library -->
 <script src="../lib/tracking-min.js"></script>
@@ -49,7 +49,7 @@ class Faces {
     
     // Draw detected faces
     this.tracker.on( 'track', ( event ) => {
-      this.context.drawImage( this.video, 0, 0, 320, 240 );
+      this.context.drawImage( this.video, 0, 0, 640, 480 );
       event.data.forEach( ( rect ) => {
         this.context.strokeStyle = 'yellow';
         this.context.strokeRect( rect.x, rect.y, rect.width, rect.height );        

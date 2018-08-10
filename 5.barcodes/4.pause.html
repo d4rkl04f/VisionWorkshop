@@ -3,6 +3,8 @@
 
 <title>Pause Between Scans</title>
 
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+
 <style>
 body {
   align-items: center;
@@ -17,13 +19,44 @@ canvas {
   position: absolute;
   visibility: hidden;
 }
+
+p {
+  background-color: rgba( 0, 0, 0, 0.25 );
+  bottom: 0;
+  color: white;
+  display: none;
+  font-family: 'Roboto', sans-serif;  
+  font-size: 24px;
+  height: 70px;
+  left: 0;
+  line-height: 70px;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  right: 0;
+  text-align: center;
+  text-shadow: 1px 1px black;  
+}
+
+#holder {
+  height: 480px;
+  position: relative;
+  width: 640px;
+}
 </style>
 
 </head>
 <body>
 
-<!-- Web camera stream -->
-<video width="640" height="480"></video>
+<div id="holder">
+
+  <!-- Web camera stream -->
+  <video width="640" height="480"></video>
+
+  <!-- Output -->
+  <p></p>
+
+</div>
 
 <!-- Offscreen capture -->
 <canvas width="640" height="480"></canvas>
@@ -45,6 +78,7 @@ class Barcode {
     this.video = document.querySelector( 'video' );
     this.canvas = document.querySelector( 'canvas' );
     this.context = this.canvas.getContext( '2d' );
+    this.output = document.querySelector( 'p' );    
 
     // Put web camera stream into video element
     navigator.mediaDevices.getUserMedia( {audio: false, video: true} )
@@ -75,7 +109,12 @@ class Barcode {
         // Capture when pause started
         this.last = performance.now();
 
-        console.log( result );
+        // Display the result
+        this.output.innerHTML = result.text;
+        this.output.style.display = 'block';
+
+        // Debug
+        console.log( result );      
       } )
       .catch( ( err ) => {
         console.log( err );
@@ -87,6 +126,9 @@ class Barcode {
         // Duration elapsed
         // Set back to scanning
         this.state = Barcode.STATE_READING;
+
+        // Hide output
+        this.output.style.display = 'none';
       }
     }
 
@@ -96,7 +138,7 @@ class Barcode {
 }
 
 // Constants
-Barcode.SCAN_DELAY = 1500;
+Barcode.SCAN_DELAY = 5000;
 Barcode.STATE_READING = 1;
 Barcode.STATE_WAITING = 2;
 

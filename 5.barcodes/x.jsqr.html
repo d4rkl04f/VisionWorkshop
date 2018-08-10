@@ -3,6 +3,8 @@
 
 <title>QR Codes</title>
 
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+
 <style>
 body {
   align-items: center;
@@ -13,18 +15,49 @@ body {
   padding: 0;
 }
 
+p {
+  background-color: rgba( 0, 0, 0, 0.25 );
+  bottom: 0;
+  color: white;
+  display: none;
+  font-family: 'Roboto', sans-serif;  
+  font-size: 24px;
+  height: 70px;
+  left: 0;
+  line-height: 70px;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  right: 0;
+  text-align: center;
+  text-shadow: 1px 1px black;  
+}
+
 video {
   position: absolute;
   visibility: hidden;
+}
+
+#holder {
+  height: 480px;
+  position: relative;
+  width: 640px;
 }
 </style>
 
 </head>
 <body>
 
-<!-- Document elements -->
-<video width="640" height="480"></video>
-<canvas width="640" height="480"></canvas>
+<div id="holder">
+
+  <!-- Web camera stream -->
+  <video width="640" height="480"></video>
+  <canvas width="640" height="480"></canvas>  
+
+  <!-- Output -->
+  <p></p>
+
+</div>  
 
 <!-- Image processing library -->
 <script src="../lib/jsqr.js"></script>
@@ -36,6 +69,7 @@ class Barcode {
     this.canvas = document.querySelector( 'canvas' );
     this.context = this.canvas.getContext( '2d' );
     this.video = document.querySelector( 'video' );
+    this.output = document.querySelector( 'p' );            
 
     // Camera stream
     navigator.mediaDevices.getUserMedia( {audio: false, video: true} )
@@ -72,7 +106,12 @@ class Barcode {
 
     // Found
     if( code ) {
-      console.log( code.data );
+      // Display the result
+      this.output.innerHTML = code.data;
+      this.output.style.display = 'block';
+
+      // Debug
+      console.log( code.data );     
     }
 
     // Keep going
