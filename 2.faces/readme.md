@@ -59,8 +59,6 @@ When TrackingJS detects faces it will raise a "track" event. TrackingJS provides
 
 > This technique of identifying a specific portion of an image, and focusing in on only that area, will become more important as our computer vision skills progress towards machine learning.
 
-# Next Steps
-
 ## Face Alignment
 
 Beyond locating a face in an image, you may also want to determine alignment of the face. Practical application of facial alignment can been seen in movies like Avatar, and The Hobbit. Features are extracted from the actor, and applied to a virtual model as needed to present facial expressions. The effect goes a long ways towards realism. Or, you know, you can use it to animate emoji [poop](https://www.theverge.com/2017/9/12/16290210/new-iphone-emoji-animated-animoji-apple-ios-11-update).
@@ -70,17 +68,6 @@ One approach to determining face alignment is to use a set of known points on th
 ### CLM Tracker
 
 The application of the shape model is effectively trying to map a variation of known points to the specified source image. One approach to this is called constrained local model (CLM). There is a JavaScript implementation of CLM called, [CLM Tracker](https://github.com/auduno/clmtrackr). The embedded shape model makes CLM Tracker a bit heavy at 2.4 MB, but serves its purpose well.
-
-### Document Setup
-
-The boilerplate we created in the previous section to put the video stream onto a canvas, represents the same code we will need to perform facial alignment. If you developed this locally in the previous exercise, then make a copy of that document. You can alternatively start from "1.getting.started/3.canvas.html".
-
-The core document elements we want to use are the "video" and "canvas" tags, and then a "script" tag to include the CLM Tracker library. As with Tracking.JS, CLM Tracker is not available on a CDN, so you will have to download it and include it in your document, or use the version included with this workshop repository. While you can keep the "video" and "canvas" set to 320x240, this exercise is more enjoyable with a higher video stream resolution of 640x480.
-
-    <video width="640" height="480" preload autoplay loop muted></video>
-    <canvas width="640" height="480"></canvas>
-    
-    <script src="../lib/clmtracker.js"></script>
 
 ### Tracking Hooks
 
@@ -118,3 +105,6 @@ Now bringing our focus to the "detect()" method, between the painting of the vid
 
 One of the other nice features of the CLM Tracker library is that it includes a method to do the drawing for you. The shape model is a complex assortment of paths and points, and rather than have to account for drawing them, we can simply pass the canvas reference to the "draw()" method. Alternatively, if you do not want to draw the alignment results, you can get the raw results with a call to "getCurrentPosition()". From there, you might perform additional processing to map the results and morph an image - just like Hollywood.
 
+## HeadTrackr
+
+While TrackingJS can tell us where a face is located in an image (or video stream), and CLM Tracker can tell us about the features of a face, one additional piece of information an application may be interested in knowing is the tilt angle of the head itself. A face tracking library that does this is [HeadTrackr](https://github.com/auduno/headtrackr). An example of using HeadTrackr is included in the workshop materials but not covered in the lecture.
