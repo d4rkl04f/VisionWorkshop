@@ -38,18 +38,19 @@ img {
 <script>
 class Reader {
   constructor() {
-    // Prepare to read file contents    
-    this.io = new FileReader();
-    this.io.addEventListener( 'load', ( evt ) => this.doFileLoad( evt ) );
-
     // Element references
     // Canvas as drop target
     this.canvas = document.querySelector( 'canvas' );
     this.canvas.addEventListener( 'dragover', ( evt ) => this.doDragOver( evt ) );
     this.canvas.addEventListener( 'drop', ( evt ) => this.doDragDrop( evt ) );    
     this.context = this.canvas.getContext( '2d' );
+
     this.sample = document.querySelector( 'img' );
     this.sample.addEventListener( 'load', ( evt ) => this.doImageLoad( evt ) );
+
+    // Prepare to read file contents    
+    this.io = new FileReader();
+    this.io.addEventListener( 'load', ( evt ) => this.doFileLoad( evt ) );
   }
 
   draw( words = [] ) {
