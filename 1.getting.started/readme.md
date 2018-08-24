@@ -2,7 +2,7 @@
 
 In order for a computer to have vision, it needs to have some fashion of representation of the physical world. The most readily accessible means to capture a representation of the physical world for most people is a camera - usually on their phone, laptop, or other computing device.
 
-Computer vision using a camera will typically process still images, or still images from video feeds. To this using Web Standards, we will have three steps. 
+Computer vision using a camera will typically process still images, or still images from video feeds. To do this using Web Standards, we will have three steps. 
 
 The first step is providing a placeholder for the video. The second step is to get access to the camera on the device, and use that as the video feed. Finally, we need to get access to the pixels of the video feed, which can be accomplished using a canvas element.
 
@@ -34,15 +34,15 @@ For the purposes of getting started, in this workshop, we are going to make the 
 
 The Stream API allows us to get video from the camera as a stream, but then we need some place to put it. That is where the video element comes into play. The first step then is to get a reference to that video element.
 
-Once we have that video element, we can invoke the Stream API. This is a promise-based API, returning the camera video feed as a stream object. We can then set that stream as the source for the video element, and start playing.
+Once we have that video element, we can invoke the Stream API. This is a promise-based API, returning the camera video feed as a stream object. We can then set that stream as the source for the video element, and start playing the content.
 
 ## Canvas and Context
 
 The "canvas" element is generally more well-known for the ability to draw inside a document. It is core to amazing charts, 3D content, and more. That drawing capability will come in handy in capturing snapshots from the video stream. We will want to access the canvas element from various places in our code, so get a reference to it at a scope where it will be visible across functions.
 
-	this.video = document.querySelector( 'video' );
-	this.canvas = document.querySelector( 'canvas' );
-	this.context = this.canvas.getContext( '2d' );
+	  this.video = document.querySelector( 'video' );
+  	this.canvas = document.querySelector( 'canvas' );
+	  this.context = this.canvas.getContext( '2d' );
 	
 The context object is really what makes canvas work - it is where all the drawing APIs are defined. There are both "2D" and "3D" contexts that can be used with the canvas context today. We are interested in the "2d" context. We will come back to this in a moment, but for now, back to that snippet of code that allowed us to place the camera stream into the video element.
 
@@ -56,7 +56,7 @@ The context object is really what makes canvas work - it is where all the drawin
       console.log( error );
     } );
 
-Once we had the stream from the camera, we assigned it as the source of the video element, and then started playing. Immediately following those steps we are going to add a call to a function. The responsibility of that function will be to take the current contents of the video element, and draw it onto the canvas element.
+Once we have the stream from the camera, we assigned it as the source of the video element, and then started playing. Immediately following those steps we are going to add a call to a function. The responsibility of that function will be to take the current contents of the video element, and draw it onto the canvas element.
 
     detect() {
       this.context.drawImage( this.video, 0, 0, this.canvas.width, this.canvas.height );
@@ -69,7 +69,7 @@ The first line in this function does that drawing work. The second line uses "re
 
 ## Image Processing
 
-Now let us have some fun with the pixels on the canvas. The first step for many computer vision algorithms is actually to remove color from the source image. This is because color represents noise to those algorithms and makes it harder to perform object detection and the likes. 
+Now let us have some fun with the pixels on the canvas. The first step for many computer vision algorithms is actually to remove color from the source image. This is because color often represents noise to those algorithms and makes it harder to perform object detection and the likes. 
 
     detect() {
       this.context.drawImage( this.video, 0, 0, this.canvas.width, this.canvas.height );

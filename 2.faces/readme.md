@@ -4,7 +4,7 @@ Human faces follow a common layout. There is a blank space at the top of the hea
 
 This pattern of shifts in contrast can be reduced to a numerical matrix (array). One way then to look for faces is to look at the pixels in an image and compare against this matrix to see if the pattern emerges. If it does, then there is a good chance we have detected a face. The assembly of this matrix is referred to as [Eigenfaces](https://en.wikipedia.org/wiki/Eigenface) in computer vision terms. The search for the matching matrix is called [Viola-Jones](https://en.wikipedia.org/wiki/Viola%E2%80%93Jones_object_detection_framework), which is used more broadly for object detection in general.
 
-> Facial detection and facial recognition are two separate computer vision problems. At this point we will focus on detection (and alignment). Once we have a grasp on machine learning applications we will move to focus on recognition.
+> Facial detection and facial recognition are two separate computer vision problems. At this point we will focus on facial detection. Once we have a grasp on machine learning applications we will move to focus on recognition.
 
 ## Tracking.JS
 
@@ -14,8 +14,8 @@ There are a few JavaScript libraries for facial detection. If you are looking fo
 
 Just as with the previous exercise, we will need both a video element and a canvas element in our document. Some libraries will actually create these for you as needed. Also, as TrackingJS takes care of attaching the camera stream to the video element, the video element will get a few extra attributes to control the playback.
 
-    <video  width="320"  height="240"  preload  autoplay  loop  muted></video>
-    <canvas  width="320"  height="240"></canvas>
+    <video width="640" height="480" preload autoplay loop muted></video>
+    <canvas width="640" height="480"></canvas>
 
 ### Adding the Library
 
@@ -34,7 +34,7 @@ We will want to get references to the video and canvas elements for use in our a
 
 ### Instantiate Tracking
 
-Once included in our document, TrackingJS will show up at the global scope in a namespace called "tracking". Face detection is functional a special type of object tracking, so we will instantiate an instance of the TrackingJS object tracker, and tell it that we are specifically looking for faces. Depending on your environment, you can tune how the object tracker works. The code example that follows demonstrates using the tuning functions. Last but not least, we start tracking, passing that reference to the video element.
+Once included in our document, TrackingJS will show up at the global scope in a namespace called "tracking". Face detection is functionally a special type of object tracking, so we will instantiate an instance of the TrackingJS object tracker, and tell it that we are specifically looking for faces. Depending on your environment, you can tune how the object tracker works. The code example that follows demonstrates using the tuning functions. Last but not least, we start tracking, passing that reference to the video element.
 
     this.tracker = new  tracking.ObjectTracker( 'face' );
     this.tracker.setInitialScale( 4 );
@@ -50,7 +50,7 @@ Once included in our document, TrackingJS will show up at the global scope in a 
 When TrackingJS detects faces it will raise a "track" event. TrackingJS provides an "on()" method for attaching event handlers. The emitted event includes a "data" property which is an array of objects representing a rectangle - one element in the array for each found face. The rectangle objects include "x", "y", "width", and "height" which we can then use to highlight by drawing on the canvas.
 
     this.tracker.on( 'track', ( event ) => {
-      this.context.drawImage( this.video, 0, 0, 320, 240 );
+      this.context.drawImage( this.video, 0, 0, 640, 480 );
       event.data.forEach( ( rect ) => {
         this.context.strokeStyle = 'yellow';
         this.context.strokeRect( rect.x, rect.y, rect.width, rect.height );
@@ -58,6 +58,8 @@ When TrackingJS detects faces it will raise a "track" event. TrackingJS provides
     } );
 
 > This technique of identifying a specific portion of an image, and focusing in on only that area, will become more important as our computer vision skills progress towards machine learning.
+
+# Next Steps
 
 ## Face Alignment
 
