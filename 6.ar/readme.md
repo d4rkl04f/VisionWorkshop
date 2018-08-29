@@ -15,14 +15,14 @@ Presenting 3D content in the browser has been around for a while, and libraries 
 
 In ThreeJS the "scene" is where you place the content you want rendered. You may also want the background to match the background of your web page.
 
-    this.scene = new  THREE.Scene();
-    this.scene.background = new  THREE.Color( 0xffffff );
+    this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color( 0xffffff );
 
 ### Camera
 
 In order to view the scene, you will need a camera. You can think of this as your users view into the 3D world you create. You can move the camera around the scene programmatically, or via mouse controls. You can also control where it is the camera is looking. In this case we will position the back from the center of the scene, which is represented in 3D space as "0, 0, 0". We will then tilt the camera slightly to look back towards the center point.
 
-    this.camera = new  THREE.PerspectiveCamera(
+    this.camera = new THREE.PerspectiveCamera(
       45,
       this.root.clientWidth / this.root.clientHeight,
       0.1,
@@ -31,13 +31,13 @@ In order to view the scene, you will need a camera. You can think of this as you
     this.camera.position.x = 0;
     this.camera.position.y = 0;
     this.camera.position.z = 150;
-    this.camera.lookAt( new  THREE.Vector3( 0, 0, 0 ) );
+    this.camera.lookAt( new THREE.Vector3( 0, 0, 0 ) );
 
 ### Renderer
 
 The renderer is where the work of putting something onto the screen takes place. You can size it for a small section of the web page, but for this application we will take up the entire viewport.
 
-    this.renderer = new  THREE.WebGLRenderer();
+    this.renderer = new THREE.WebGLRenderer();
     this.renderer.setSize( this.root.clientWidth, this.root.clientHeight );
     this.renderer.shadowMap.enabled = true;
 
@@ -45,7 +45,7 @@ The renderer is where the work of putting something onto the screen takes place.
 
 Without any lighting the scene will currently render as black. In 3D there are various forms of lighting. In this application we will add a "SpotLight" to point at the center point. Much like the camera, you can programmatically control the position of the light within the scene, and you can also control where it is pointed (in the case of a spotlight).
 
-    let  light = new  THREE.SpotLight( 0xFFFFFF );
+    let  light = new THREE.SpotLight( 0xFFFFFF );
     light.position.set( 0, 0, 150 );
     this.scene.add( light );
 
@@ -118,7 +118,7 @@ Using an ARToolkit camera is almost identical to the way we have been using WebR
 
 First, we instantiate an "ARCameraParam" object. Before telling it where the data file is located, we add hooks for what to do once that file is loaded. For our purposes, this is where we will start the web camera and put it into the video element. With our hooks in place, we then load the data file.
 
-    this.camera = new  ARCameraParam();
+    this.camera = new ARCameraParam();
     this.camera.onload = () => {
       navigator.mediaDevices.getUserMedia( {audio:  false, video:  true} )
       .then( ( stream ) => {
@@ -140,7 +140,7 @@ The size of the video element is particularly important in getting everything li
     this.video.addEventListener( 'loadedmetadata', ( evt ) =>  this.doVideoLoad( evt ) );
     
     doVideoLoad( evt ) {
-      this.ar = new  ARController( this.video, this.camera );
+      this.ar = new ARController( this.video, this.camera );
       this.ar.setPatternDetectionMode( artoolkit.AR_MATRIX_CODE_DETECTION );
       this.ar.addEventListener( 'getMarker', ( evt ) =>  this.doMarker( evt ) );
       this.ar.loadMarker( '../assets/hdc.marker.patt', ( evt ) => {
