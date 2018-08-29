@@ -45,7 +45,7 @@ The renderer is where the work of putting something onto the screen takes place.
 
 Without any lighting the scene will currently render as black. In 3D there are various forms of lighting. In this application we will add a "SpotLight" to point at the center point. Much like the camera, you can programmatically control the position of the light within the scene, and you can also control where it is pointed (in the case of a spotlight).
 
-    let  light = new THREE.SpotLight( 0xFFFFFF );
+    let light = new THREE.SpotLight( 0xFFFFFF );
     light.position.set( 0, 0, 150 );
     this.scene.add( light );
 
@@ -80,7 +80,7 @@ In order to import an external model into our ThreeJS scene, we will first need 
 Moving an object in the scene (or camera, or light) requires that you tell ThreeJS to render the scene again before it will be displayed on the screen. This is an ideal use for "requestAnimationFrame()". Move something. Render something. If we monitor the timing, it also gives us an ideal place to fine tune how the movement occurs. For this we will lean on the "performance.now()" method we discussed earlier in the workshop.
 
     render() {
-      let  now = performance.now();
+      let now = performance.now();
       
       if( ( now - this.time ) > Three.ROTATION_RATE ) {
         this.time = now;
