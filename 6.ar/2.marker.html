@@ -51,10 +51,6 @@ class Augmented {
     this.video = document.querySelector( 'video' );
     this.video.addEventListener( 'loadedmetadata', ( evt ) => this.doVideoLoad( evt ) );        
 
-    // Scene
-    this.renderer = new THREE.WebGLRenderer( {antialias: true} );
-    this.renderer.setSize( this.video.clientWidth, this.video.clientHeight );
-
     // Augmented reality properties
     // Controller and camera
     // Start detecting when camera is ready
@@ -112,18 +108,9 @@ class Augmented {
     this.ar.setPatternDetectionMode( artoolkit.AR_MATRIX_CODE_DETECTION );        
     this.ar.addEventListener( 'getMarker', ( evt ) => this.doMarker( evt ) );
     this.ar.loadMarker( '../assets/hdc.marker.patt', ( evt ) => {
-      console.log( 'Marker: ' + evt );
-
-      let sphere = new THREE.Mesh(
-        new THREE.SphereGeometry( 0.5, 8, 8 ),
-        new THREE.MeshNormalMaterial()
-      );
-      sphere.material.shading = THREE.FlatShading;
-      sphere.position.z = 0.5;
-
-      let root = this.ar.createThreeMarker( evt );
-      root.add( sphere );
       this.detect();      
+
+      console.log( 'Marker: ' + evt );      
     } );
   }
 }
