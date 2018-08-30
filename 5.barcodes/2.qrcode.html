@@ -53,12 +53,20 @@ p {
 
 </div>
 
+<!-- Audible scan indicator -->
+<audio>
+  <source src="/assets/grocery.mp3" type="audio/mp3">
+</audio>
+
 <!-- Zebra Crossing library -->
 <script src="../lib/zxing.min.js"></script>
 
 <script>
 class Barcode {
   constructor() {
+    // Audio reference
+    this.audio = document.querySelector( 'audio' );
+    
     // Video reference
     this.video = document.querySelector( 'video' );
 
@@ -74,6 +82,9 @@ class Barcode {
       // Display the result
       this.output.innerHTML = result.text;
       this.output.style.display = 'block';
+
+      // Audible indicator
+      this.audio.play();
 
       // Debug
       console.log( result );      
