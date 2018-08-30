@@ -61,6 +61,11 @@ p {
 <!-- Offscreen capture -->
 <canvas width="640" height="480"></canvas>
 
+<!-- Audible scan indicator -->
+<audio>
+  <source src="/assets/grocery.mp3" type="audio/mp3">
+</audio>
+
 <!-- Zebra Crossing library -->
 <script src="../lib/zxing.min.js"></script>
 
@@ -75,6 +80,7 @@ class Barcode {
     this.reader = new ZXing.BrowserBarcodeReader();
     
     // Element references
+    this.audio = document.querySelector( 'audio' );
     this.video = document.querySelector( 'video' );
     this.canvas = document.querySelector( 'canvas' );
     this.context = this.canvas.getContext( '2d' );
@@ -112,6 +118,9 @@ class Barcode {
         // Display the result
         this.output.innerHTML = result.text;
         this.output.style.display = 'block';
+
+        // Audible indicator
+        this.audio.play();
 
         // Debug
         console.log( result );      
