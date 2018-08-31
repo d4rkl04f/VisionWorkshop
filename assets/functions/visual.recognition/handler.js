@@ -28,7 +28,13 @@ function main( params ) {
       var form = {
         file: fs.createReadStream( parts.file )
       };
+	  
+	  if( parts.classifiers ) {
+        form.classifier_ids = parts.classifiers;
+	  }
       
+	  console.log( parts );
+	  
       request( {
         method: 'POST',
         url: params.API_URL + '?version=' + params.API_VERSION,

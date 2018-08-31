@@ -85,6 +85,18 @@ class Machine {
     } );        
   }
 
+  // Classify image through Watson
+  async classify( form ) {
+    return fetch( Machine.RECOGNITION, {
+      method: 'POST',
+      body: form
+    } )
+    .then( ( result ) => { return result.json(); } )
+    .then( ( json ) => { 
+      return json;
+    } );
+  }
+
   draw() {
     // Calculate proportions
     // Sizing and placement
@@ -107,7 +119,7 @@ class Machine {
     this.context.drawImage( this.sample, left, top, width, height );
   }
 
-  doDragDrop( evt ) {
+  async doDragDrop( evt ) {
     // Item dropped
     // Prevent browser default (opening)
     // Read content of the file
@@ -122,35 +134,29 @@ class Machine {
     let form = new FormData();
     form.append( 'file', evt.dataTransfer.files[0] );
 
-    // Upload to Watson Visual Recognition
-    fetch( Machine.RECOGNITION, {
-      method: 'POST',
-      body: form
-    } )
-    .then( ( result ) => { return result.json(); } )
-    .then( ( json ) => { 
-      // Build output
-      let primary = json.images[0].classifiers[0].classes[0].class;
-      let modifier = 'a';
+    let watson = await this.classify( form );
 
-      if( primary.charAt( 0 ) === 'a' || primary.charAt( 0 ) === 'o' ) {
-        modifier = 'an';
-      }
+    // Build output
+    let primary = watson.images[0].classifiers[0].classes[0].class;
+    let modifier = 'a';
 
-      let phrase = `This looks like ${modifier} ${primary}.`;
+    if( primary.charAt( 0 ) === 'a' || primary.charAt( 0 ) === 'o' ) {
+      modifier = 'an';
+    }
 
-      // Display output
-      this.output.innerHTML = phrase;
-      
-      // Have Watson speak the results
-      WatsonSpeech.TextToSpeech.synthesize( {
-        text: phrase,
-        token: this.token
-      } );
+    let phrase = `This looks like ${modifier} ${primary}.`;
 
-      // Debug
-      console.log( json );      
+    // Display output
+    this.output.innerHTML = phrase;
+    
+    // Have Watson speak the results
+    WatsonSpeech.TextToSpeech.synthesize( {
+      text: phrase,
+      token: this.token
     } );
+
+    // Debug
+    console.log( watson );      
   }
 
   doDragOver( evt ) {

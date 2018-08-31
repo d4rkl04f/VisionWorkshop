@@ -58,3 +58,8 @@ Learn computer vision with real-time facial detection, optical character recogni
 - Combine AR.js with A-Frame for rapid augmented reality development
 - AR.js and A-Frame combination with scene adjusted for mobile viewport
 
+### Machine Learning
+
+- Drag and drop an image file to see what Watson thinks
+- Move the Watson call to async/await for cleaner usage down the road
+- Search against a Watson custom classifier first, then the default
