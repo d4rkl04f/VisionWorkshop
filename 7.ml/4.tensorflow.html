@@ -3,6 +3,8 @@
 
 <title>TensorFlow</title>
 
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+
 <style>
 body {
   align-items: center;
@@ -23,81 +25,178 @@ img {
   top: 0;
   visibility: hidden;
 }
+
+p {
+  color: black;
+  font-family: 'Roboto', sans-serif;  
+  font-size: 24px;
+  height: 70px;
+  line-height: 70px;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+#resize {
+  left: 0;
+  position: absolute;
+  top: 0;
+  visibility: hidden;
+}
 </style>
 
 </head>
 <body>
 
 <!-- Display contents -->
-<canvas width="640" height="480"></canvas>
+<canvas id="display" width="640" height="480"></canvas>
+
+<p>&nbsp;</p>
 
 <!-- Dropped image -->
 <img>
 
+<!-- Resize image -->
+<canvas id="resize" width="224" height="224"></canvas>
+
 <!-- TensorFlow -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.12.5"></script>
+
+<!-- Watson speech library -->
+<script src="../lib/watson-speech.min.js"></script>
 
 <script>
 class Machine {
   constructor() {
     // Canvas references
-    // Used for encoding image for CSS background
-    this.canvas = document.querySelector( 'canvas' );
-    this.canvas.addEventListener( 'dragover', ( evt ) => this.doDragOver( evt ) );
-    this.canvas.addEventListener( 'drop', ( evt ) => this.doDragDrop( evt ) );    
-    this.context = this.canvas.getContext( '2d' );    
+    // Displays dropped content sized for viewport
+    this.display = {canvas: null, context: null};
+    
+    this.display.canvas = document.querySelector( '#display' )
+    this.display.canvas.addEventListener( 'dragover', ( evt ) => this.doDragOver( evt ) );
+    this.display.canvas.addEventListener( 'drop', ( evt ) => this.doDragDrop( evt ) );    
+    this.display.context = this.display.canvas.getContext( '2d' );    
+
+    // Canvas reference
+    // Used to size dropped content for model
+    this.resize = {canvas: null, context: null};    
+    this.resize.canvas = document.querySelector( '#resize' );
+    this.resize.context = this.resize.canvas.getContext( '2d' );
 
     // Place to load the image
     this.sample = document.querySelector( 'img' );
     this.sample.addEventListener( 'load', ( evt ) => this.doImageLoad( evt ) );
+
+    // Display text of results
+    this.output = document.querySelector( 'p' );
 
     // Prepare to read file contents
     this.io = new FileReader();
     this.io.addEventListener( 'load', ( evt ) => this.doFileLoad( evt ) );    
 
     // TensorFlow
+    // MobileNet classifier
     this.mobilenet = null;
     
     tf.loadModel( Machine.MOBILE_NET )
     .then( ( result ) => {
       this.mobilenet = result;
 
-      // Warm-up
-      this.mobilenet.predict( tf.zeros( [1, 224, 224, 3] ) ).dispose();
+      // Warm-up for faster prediction on actual content
+      this.mobilenet.predict( tf.zeros( [1, Machine.DIMENSIONS, Machine.DIMENSIONS, 3] ) ).dispose();
     } );
 
+    // ImageNet
+    // What the model can classify
     this.imagenet = null;
 
-    fetch( '../assets/imagenet.json' )
+    // Loaded as JSON
+    fetch( Machine.IMAGE_NET )
     .then( ( result ) => { return result.json(); } )
     .then( ( json ) => {
       this.imagenet = json;
     } );
+
+    // Store Watson authorization token
+    this.token = null;
+
+    // Get Watson authorization token
+    fetch( Machine.WATSON_TOKEN )
+    .then( ( result ) => { return result.json(); } )
+    .then( ( data ) => {
+      this.token = data.body;
+    } );            
+  }
+
+  contain( canvas, image ) {
+    let aspect = canvas.clientWidth / image.clientWidth;
+    let height = Math.round( image.clientHeight * aspect );
+    let width = canvas.clientWidth; 
+    let left = 0;
+    let top = Math.round( ( canvas.clientHeight - height ) / 2 );
+
+    if( image.clientHeight >= image.clientWidth ) {
+      aspect = canvas.clientHeight / image.clientHeight;
+      width = Math.round( image.clientWidth * aspect );
+      top = 0;      
+      left = Math.round( ( canvas.clientWidth - width ) / 2 );      
+      height = canvas.clientHeight;
+    }
+
+    return {
+      x: left,
+      y: top,
+      width: width,
+      height: height
+    };
+  }
+
+  cover( canvas, image ) {
+    let aspect = image.clientHeight / image.clientWidth;    
+    let height = canvas.clientHeight;
+    let width = Math.round( height / aspect );
+    
+    let left = Math.round( ( canvas.clientWidth - width ) / 2 );
+    let top = 0;
+
+    if( image.clientHeight > image.clientWidth ) {
+      aspect = image.clientWidth / image.clientHeight;
+      width = canvas.clientHeight;
+      height = Math.round( width / aspect );
+      top = Math.round( ( canvas.clientHeight - height ) / 2 );
+      left = 0;
+    }
+
+    return {
+      x: left,
+      y: top,
+      width: width,
+      height: height
+    };
   }
 
   draw() {
-    // Calculate proportions
-    // Sizing and placement
-    let aspect = this.canvas.clientWidth / this.sample.clientWidth;
-    let height = Math.round( this.sample.clientHeight * aspect );
-    let left = 0;
-    let top = Math.round( ( this.canvas.clientHeight - height ) / 2 );
-    let width = this.canvas.clientWidth;
+    // Contain image in canvas
+    let position = this.contain( this.display.canvas, this.sample ); 
 
-    if( this.sample.clientHeight >= this.sample.clientWidth ) {
-      aspect = this.canvas.clientHeight / this.sample.clientHeight;
-      width = Math.round( this.sample.clientWidth * aspect );
-      top = 0;      
-      left = Math.round( ( this.canvas.clientWidth - width ) / 2 );      
-      height = this.canvas.clientHeight;
-    }
-
+    // Clear canvas
     // Draw image to canvas
-    this.context.clearRect( 0, 0, this.canvas.clientWidth, this.canvas.clientHeight );
-    this.context.drawImage( this.sample, left, top, width, height );
+    this.display.context.clearRect( 
+      0,
+      0,
+      this.display.canvas.clientWidth,
+      this.display.canvas.clientHeight
+    );
+    this.display.context.drawImage(
+      this.sample,
+      position.x, 
+      position.y, 
+      position.width, 
+      position.height       
+    );
   }
 
-  async doDragDrop( evt ) {
+  doDragDrop( evt ) {
     // Item dropped
     // Prevent browser default (opening)
     // Read content of the file
@@ -118,31 +217,65 @@ class Machine {
   }
 
   async doImageLoad( evt ) {
+    // Clear existing label
+    this.output.innerHTML = '&nbsp;';
+
+    // Image element has loaded
+    // Draw onto display canvas
+    this.draw();
+
+    // Cover resize canvas with image    
+    let position = this.cover( this.resize.canvas, this.sample );
+
+    // Draw image to resize canvas
+    this.resize.context.drawImage( 
+      this.sample, 
+      position.x,
+      position.y, 
+      position.width, 
+      position.height 
+    );        
+
+    // Pass canvas through model
     let logits = tf.tidy(() => {
-      let image = tf.fromPixels( this.sample ).toFloat();
-      let offset = tf.scalar( 127.5 );
+      let image = tf.fromPixels( this.resize.canvas ).toFloat();
+      let offset = tf.scalar( Machine.DIMENSIONS / 2 );
       let normalized = image.sub( offset ).div( offset );
-      let batched = normalized.reshape( [1, 224, 224, 3] );
+      let batched = normalized.reshape( [1, Machine.DIMENSIONS, Machine.DIMENSIONS, 3] );
 
       return this.mobilenet.predict( batched );
     } );
 
+    // Get classe
     let classes = await this.predict( logits, 10 );
 
-    console.log( classes );
+    // Build output
+    let primary = classes[0].className;
+    let modifier = 'a';
 
-    /*
-    let image = tf.fromPixels( this.sample );
-    let expanded = tf.expandDims( image, 0 );
-    let normalized = expanded.toFloat().div( tf.scalar( 255 ) );    
-    let activation = this.yolo.predict( normalized );
+    // Some entries contain multiple labels
+    if( primary.indexOf( ',' ) ) {
+      primary = primary.split( ',' )[0].trim();
+    }
+
+    // Grammar
+    if( primary.charAt( 0 ) === 'a' || primary.charAt( 0 ) === 'o' ) {
+      modifier = 'an';
+    }
+
+    let phrase = `This looks like ${modifier} ${primary}.`;
+
+    // Display output
+    this.output.innerHTML = phrase;
     
-    console.log( activation );
-    */
+    // Have Watson speak the results
+    WatsonSpeech.TextToSpeech.synthesize( {
+      text: phrase,
+      token: this.token
+    } ); 
 
-    // Image element has loaded
-    // Draw onto canvas
-    this.draw();
+    // Debug
+    console.log( classes );
   }
 
   async predict( logits, top ) {
@@ -178,7 +311,11 @@ class Machine {
   }
 }
 
+Machine.DIMENSIONS = 224;
+Machine.IMAGE_NET = '../assets/imagenet.json';
 Machine.MOBILE_NET = 'https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json';
+Machine.WATSON_TOKEN = 'https://openwhisk.ng.bluemix.net/api/v1/web/krhoyt%40us.ibm.com_dev/watson/tts.token.json';
+
 let app = new Machine();
 </script>
 
