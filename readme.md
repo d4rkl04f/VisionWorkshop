@@ -63,3 +63,4 @@ Learn computer vision with real-time facial detection, optical character recogni
 - Drag and drop an image file to see what Watson thinks
 - Move the Watson call to async/await for cleaner usage down the road
 - Search against a Watson custom classifier first, then the default
+- Image classification using TensorFlow against the MobileNet model

@@ -1,0 +1,186 @@
+<html>
+<head>
+
+<title>TensorFlow</title>
+
+<style>
+body {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+canvas {
+  border: solid 1px lightgrey;
+}
+
+img {
+  left: 0;
+  position: absolute;
+  top: 0;
+  visibility: hidden;
+}
+</style>
+
+</head>
+<body>
+
+<!-- Display contents -->
+<canvas width="640" height="480"></canvas>
+
+<!-- Dropped image -->
+<img>
+
+<!-- TensorFlow -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.12.5"></script>
+
+<script>
+class Machine {
+  constructor() {
+    // Canvas references
+    // Used for encoding image for CSS background
+    this.canvas = document.querySelector( 'canvas' );
+    this.canvas.addEventListener( 'dragover', ( evt ) => this.doDragOver( evt ) );
+    this.canvas.addEventListener( 'drop', ( evt ) => this.doDragDrop( evt ) );    
+    this.context = this.canvas.getContext( '2d' );    
+
+    // Place to load the image
+    this.sample = document.querySelector( 'img' );
+    this.sample.addEventListener( 'load', ( evt ) => this.doImageLoad( evt ) );
+
+    // Prepare to read file contents
+    this.io = new FileReader();
+    this.io.addEventListener( 'load', ( evt ) => this.doFileLoad( evt ) );    
+
+    // TensorFlow
+    this.mobilenet = null;
+    
+    tf.loadModel( Machine.MOBILE_NET )
+    .then( ( result ) => {
+      this.mobilenet = result;
+
+      // Warm-up
+      this.mobilenet.predict( tf.zeros( [1, 224, 224, 3] ) ).dispose();
+    } );
+
+    this.imagenet = null;
+
+    fetch( '../assets/imagenet.json' )
+    .then( ( result ) => { return result.json(); } )
+    .then( ( json ) => {
+      this.imagenet = json;
+    } );
+  }
+
+  draw() {
+    // Calculate proportions
+    // Sizing and placement
+    let aspect = this.canvas.clientWidth / this.sample.clientWidth;
+    let height = Math.round( this.sample.clientHeight * aspect );
+    let left = 0;
+    let top = Math.round( ( this.canvas.clientHeight - height ) / 2 );
+    let width = this.canvas.clientWidth;
+
+    if( this.sample.clientHeight >= this.sample.clientWidth ) {
+      aspect = this.canvas.clientHeight / this.sample.clientHeight;
+      width = Math.round( this.sample.clientWidth * aspect );
+      top = 0;      
+      left = Math.round( ( this.canvas.clientWidth - width ) / 2 );      
+      height = this.canvas.clientHeight;
+    }
+
+    // Draw image to canvas
+    this.context.clearRect( 0, 0, this.canvas.clientWidth, this.canvas.clientHeight );
+    this.context.drawImage( this.sample, left, top, width, height );
+  }
+
+  async doDragDrop( evt ) {
+    // Item dropped
+    // Prevent browser default (opening)
+    // Read content of the file
+    evt.preventDefault();
+    this.io.readAsDataURL( evt.dataTransfer.files[0] );
+  }
+
+  doDragOver( evt ) {
+    // Item dragged
+    // Prevent browser default (opening)
+    evt.preventDefault();
+  }
+
+  doFileLoad( evt ) {
+    // File contents have been read
+    // Place contents into image element
+    this.sample.src = this.io.result;
+  }
+
+  async doImageLoad( evt ) {
+    let logits = tf.tidy(() => {
+      let image = tf.fromPixels( this.sample ).toFloat();
+      let offset = tf.scalar( 127.5 );
+      let normalized = image.sub( offset ).div( offset );
+      let batched = normalized.reshape( [1, 224, 224, 3] );
+
+      return this.mobilenet.predict( batched );
+    } );
+
+    let classes = await this.predict( logits, 10 );
+
+    console.log( classes );
+
+    /*
+    let image = tf.fromPixels( this.sample );
+    let expanded = tf.expandDims( image, 0 );
+    let normalized = expanded.toFloat().div( tf.scalar( 255 ) );    
+    let activation = this.yolo.predict( normalized );
+    
+    console.log( activation );
+    */
+
+    // Image element has loaded
+    // Draw onto canvas
+    this.draw();
+  }
+
+  async predict( logits, top ) {
+    let values = await logits.data();
+    let valuesAndIndices = [];
+
+    for( let i = 0; i < values.length; i++ ) {
+      valuesAndIndices.push( {value: values[i], index: i} );
+    }
+
+    valuesAndIndices.sort( ( a, b ) => {
+      return b.value - a.value;
+    } );
+  
+    let topkValues = new Float32Array( top );
+    let topkIndices = new Int32Array( top );
+  
+    for( let i = 0; i < top; i++ ) {
+      topkValues[i] = valuesAndIndices[i].value;
+      topkIndices[i] = valuesAndIndices[i].index;
+    }
+
+    let topClassesAndProbs = [];
+  
+    for( let i = 0; i < topkIndices.length; i++) {
+      topClassesAndProbs.push( {
+        className: this.imagenet[topkIndices[i]],
+        probability: topkValues[i]
+      } );
+    }
+  
+    return topClassesAndProbs;
+  }
+}
+
+Machine.MOBILE_NET = 'https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json';
+let app = new Machine();
+</script>
+
+</body>
+</html>
