@@ -19,13 +19,6 @@ canvas {
   border: solid 1px lightgrey;
 }
 
-img {
-  left: 0;
-  position: absolute;
-  top: 0;
-  visibility: hidden;
-}
-
 p {
   color: black;
   font-family: 'Roboto', sans-serif;  
@@ -37,11 +30,19 @@ p {
   text-align: center;
 }
 
-#resize {
-  left: 0;
+#indicator {
+  background-color: red;
+  border: solid 1px lightgrey;  
+  border-radius: 12px;
+  bottom: 16px;
+  height: 12px;
   position: absolute;
-  top: 0;
-  visibility: hidden;
+  right: 16px;
+  width: 12px;
+}
+
+#indicator.ready {
+  background-color: green;
 }
 </style>
 
@@ -51,13 +52,12 @@ p {
 <!-- Display contents -->
 <canvas id="display" width="640" height="480"></canvas>
 
+<!-- Output -->
 <p>&nbsp;</p>
 
-<!-- Dropped image -->
-<img>
-
-<!-- Resize image -->
-<canvas id="resize" width="224" height="224"></canvas>
+<!-- Ready indicator -->
+<!-- Model loaded -->
+<div id="indicator"></div>
 
 <!-- TensorFlow -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.12.5"></script>
@@ -65,34 +65,22 @@ p {
 <!-- Watson speech library -->
 <script src="../lib/watson-speech.min.js"></script>
 
+<!-- Drag and drop canvas -->
+<script src="../script/drag.drop.canvas.js"></script>
+
 <script>
 class Machine {
   constructor() {
-    // Canvas references
-    // Displays dropped content sized for viewport
-    this.display = {canvas: null, context: null};
+    // Enhanced canvas with drag and drop support
+    // Abstracts away some of the low-level work
+    this.canvas = new DragDropCanvas( document.querySelector( 'canvas' ) );
+    this.canvas.addEventListener( DragDropCanvas.EVENT_RESIZED, ( evt ) => this.doFileResized( evt ) );
     
-    this.display.canvas = document.querySelector( '#display' )
-    this.display.canvas.addEventListener( 'dragover', ( evt ) => this.doDragOver( evt ) );
-    this.display.canvas.addEventListener( 'drop', ( evt ) => this.doDragDrop( evt ) );    
-    this.display.context = this.display.canvas.getContext( '2d' );    
-
-    // Canvas reference
-    // Used to size dropped content for model
-    this.resize = {canvas: null, context: null};    
-    this.resize.canvas = document.querySelector( '#resize' );
-    this.resize.context = this.resize.canvas.getContext( '2d' );
-
-    // Place to load the image
-    this.sample = document.querySelector( 'img' );
-    this.sample.addEventListener( 'load', ( evt ) => this.doImageLoad( evt ) );
-
     // Display text of results
     this.output = document.querySelector( 'p' );
 
-    // Prepare to read file contents
-    this.io = new FileReader();
-    this.io.addEventListener( 'load', ( evt ) => this.doFileLoad( evt ) );    
+    // Model loaded indicator
+    this.indicator = document.querySelector( '#indicator' );
 
     // TensorFlow
     // MobileNet classifier
@@ -104,6 +92,9 @@ class Machine {
 
       // Warm-up for faster prediction on actual content
       this.mobilenet.predict( tf.zeros( [1, Machine.DIMENSIONS, Machine.DIMENSIONS, 3] ) ).dispose();
+
+      // Display as ready
+      this.indicator.classList.add( 'ready' );
     } );
 
     // ImageNet
@@ -128,117 +119,13 @@ class Machine {
     } );            
   }
 
-  contain( canvas, image ) {
-    let aspect = canvas.clientWidth / image.clientWidth;
-    let height = Math.round( image.clientHeight * aspect );
-    let width = canvas.clientWidth; 
-    let left = 0;
-    let top = Math.round( ( canvas.clientHeight - height ) / 2 );
-
-    if( image.clientHeight >= image.clientWidth ) {
-      aspect = canvas.clientHeight / image.clientHeight;
-      width = Math.round( image.clientWidth * aspect );
-      top = 0;      
-      left = Math.round( ( canvas.clientWidth - width ) / 2 );      
-      height = canvas.clientHeight;
-    }
-
-    return {
-      x: left,
-      y: top,
-      width: width,
-      height: height
-    };
-  }
-
-  cover( canvas, image ) {
-    let aspect = image.clientHeight / image.clientWidth;    
-    let height = canvas.clientHeight;
-    let width = Math.round( height / aspect );
-    
-    let left = Math.round( ( canvas.clientWidth - width ) / 2 );
-    let top = 0;
-
-    if( image.clientHeight > image.clientWidth ) {
-      aspect = image.clientWidth / image.clientHeight;
-      width = canvas.clientHeight;
-      height = Math.round( width / aspect );
-      top = Math.round( ( canvas.clientHeight - height ) / 2 );
-      left = 0;
-    }
-
-    return {
-      x: left,
-      y: top,
-      width: width,
-      height: height
-    };
-  }
-
-  draw() {
-    // Contain image in canvas
-    let position = this.contain( this.display.canvas, this.sample ); 
-
-    // Clear canvas
-    // Draw image to canvas
-    this.display.context.clearRect( 
-      0,
-      0,
-      this.display.canvas.clientWidth,
-      this.display.canvas.clientHeight
-    );
-    this.display.context.drawImage(
-      this.sample,
-      position.x, 
-      position.y, 
-      position.width, 
-      position.height       
-    );
-  }
-
-  doDragDrop( evt ) {
-    // Item dropped
-    // Prevent browser default (opening)
-    // Read content of the file
-    evt.preventDefault();
-    this.io.readAsDataURL( evt.dataTransfer.files[0] );
-  }
-
-  doDragOver( evt ) {
-    // Item dragged
-    // Prevent browser default (opening)
-    evt.preventDefault();
-  }
-
-  doFileLoad( evt ) {
-    // File contents have been read
-    // Place contents into image element
-    this.sample.src = this.io.result;
-  }
-
-  async doImageLoad( evt ) {
+  async doFileResized( resized ) {
     // Clear existing label
     this.output.innerHTML = '&nbsp;';
 
-    // Image element has loaded
-    // Draw onto display canvas
-    this.draw();
-
-    // Cover resize canvas with image    
-    let position = this.cover( this.resize.canvas, this.sample );
-
-    // Draw image to resize canvas
-    this.resize.context.drawImage( 
-      this.sample, 
-      position.x,
-      position.y, 
-      position.width, 
-      position.height 
-    );        
-
     // Pass canvas through model
     let logits = tf.tidy(() => {
-      let image = tf.fromPixels( this.resize.canvas ).toFloat();
+      let image = tf.fromPixels( resized ).toFloat();
       let offset = tf.scalar( Machine.DIMENSIONS / 2 );
       let normalized = image.sub( offset ).div( offset );
       let batched = normalized.reshape( [1, Machine.DIMENSIONS, Machine.DIMENSIONS, 3] );
@@ -278,6 +165,9 @@ class Machine {
     console.log( classes );
   }
 
+  // Match class number to known classes
+  // Extract and sort possible matches
+  // Return as an array for further use
   async predict( logits, top ) {
     let values = await logits.data();
     let valuesAndIndices = [];

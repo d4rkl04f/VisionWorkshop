@@ -19,13 +19,6 @@ canvas {
   border: solid 1px lightgrey;
 }
 
-img {
-  left: 0;
-  position: absolute;
-  top: 0;
-  visibility: hidden;
-}
-
 p {
   color: black;
   font-family: 'Roboto', sans-serif;  
@@ -51,32 +44,22 @@ p {
 <!-- Display results -->
 <p>&nbsp;</p>
 
-<!-- Dropped image -->
-<img>
-
 <!-- Watson speech library -->
 <script src="../lib/watson-speech.min.js"></script>
+
+<!-- Drag and drop canvas -->
+<script src="../script/drag.drop.canvas.js"></script>
 
 <script>
 class Machine {
   constructor() {
-    // Canvas references
-    // Used for encoding image for CSS background
-    this.canvas = document.querySelector( 'canvas' );
-    this.canvas.addEventListener( 'dragover', ( evt ) => this.doDragOver( evt ) );
-    this.canvas.addEventListener( 'drop', ( evt ) => this.doDragDrop( evt ) );    
-    this.context = this.canvas.getContext( '2d' );    
+    // Enhanced canvas with drag and drop support
+    // Abstracts away some of the low-level work
+    this.canvas = new DragDropCanvas( document.querySelector( 'canvas' ) );
+    this.canvas.addEventListener( DragDropCanvas.EVENT_DROPPED, ( evt ) => this.doFileDrop( evt ) );
 
     // Display text of results
     this.output = document.querySelector( 'p' );        
-
-    // Place to load the image
-    this.sample = document.querySelector( 'img' );
-    this.sample.addEventListener( 'load', ( evt ) => this.doImageLoad( evt ) );
-
-    // Prepare to read file contents
-    this.io = new FileReader();
-    this.io.addEventListener( 'load', ( evt ) => this.doFileLoad( evt ) );    
 
     // Store Watson authorization token
     this.token = null;
@@ -101,35 +84,7 @@ class Machine {
     } );
   }
 
-  draw() {
-    // Calculate proportions
-    // Sizing and placement
-    let aspect = this.canvas.clientWidth / this.sample.clientWidth;
-    let height = Math.round( this.sample.clientHeight * aspect );
-    let left = 0;
-    let top = Math.round( ( this.canvas.clientHeight - height ) / 2 );
-    let width = this.canvas.clientWidth;
-
-    if( this.sample.clientHeight >= this.sample.clientWidth ) {
-      aspect = this.canvas.clientHeight / this.sample.clientHeight;
-      width = Math.round( this.sample.clientWidth * aspect );
-      top = 0;      
-      left = Math.round( ( this.canvas.clientWidth - width ) / 2 );      
-      height = this.canvas.clientHeight;
-    }
-
-    // Draw image to canvas
-    this.context.clearRect( 0, 0, this.canvas.clientWidth, this.canvas.clientHeight );
-    this.context.drawImage( this.sample, left, top, width, height );
-  }
-
-  async doDragDrop( evt ) {
-    // Item dropped
-    // Prevent browser default (opening)
-    // Read content of the file
-    evt.preventDefault();
-    this.io.readAsDataURL( evt.dataTransfer.files[0] );
-
+  async doFileDrop( file ) {
     // Clear existing
     this.output.innerHTML = '&nbsp;';
     this.output.classList.remove( 'nebraska' );
@@ -137,7 +92,7 @@ class Machine {
     // Build multipart form
     // Include file reference
     let form = new FormData();
-    form.append( 'file', evt.dataTransfer.files[0] );
+    form.append( 'file', file );
     form.append( 'classifiers', Machine.CUSTOM );    
 
     // Classify against HDC
@@ -181,24 +136,6 @@ class Machine {
 
     // Debug
     console.log( watson );
-  }
-
-  doDragOver( evt ) {
-    // Item dragged
-    // Prevent browser default (opening)
-    evt.preventDefault();
-  }
-
-  doFileLoad( evt ) {
-    // File contents have been read
-    // Place contents into image element
-    this.sample.src = this.io.result;
-  }
-
-  doImageLoad( evt ) {
-    // Image element has loaded
-    // Draw onto canvas
-    this.draw();
   }
 }
 

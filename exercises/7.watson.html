@@ -1,7 +1,7 @@
 <html>
 <head>
 
-<title>Async and Await</title>
+<title>Visual Recognition</title>
 
 <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 
@@ -68,50 +68,14 @@ class Machine {
     } );        
   }
 
-  // Classify image through Watson
-  async classify( form ) {
-    return fetch( Machine.RECOGNITION, {
-      method: 'POST',
-      body: form
-    } )
-    .then( ( result ) => { return result.json(); } )
-    .then( ( json ) => { 
-      return json;
-    } );
-  }
-
-  async doFileDrop( file ) {
+  doFileDrop( file ) {
     // Clear existing
     this.output.innerHTML = '&nbsp;';
 
-    // Build multipart form
-    // Include file reference
-    let form = new FormData();
-    form.append( 'file', file );
-
-    let watson = await this.classify( form );
-
-    // Build output
-    let primary = watson.images[0].classifiers[0].classes[0].class;
-    let modifier = 'a';
-
-    if( primary.charAt( 0 ) === 'a' || primary.charAt( 0 ) === 'o' ) {
-      modifier = 'an';
-    }
-
-    let phrase = `This looks like ${modifier} ${primary}.`;
-
+    // Build the form
+    // Fetch call to Watson
     // Display output
-    this.output.innerHTML = phrase;
-    
-    // Have Watson speak the results
-    WatsonSpeech.TextToSpeech.synthesize( {
-      text: phrase,
-      token: this.token
-    } );
-
-    // Debug
-    console.log( watson );      
+    // TTS output
   }
 }
 

@@ -64,3 +64,5 @@ Learn computer vision with real-time facial detection, optical character recogni
 - Move the Watson call to async/await for cleaner usage down the road
 - Search against a Watson custom classifier first, then the default
 - Image classification using TensorFlow against the MobileNet model
+- Using TensorFlow against the MobileNet model via library abstraction
+- Feature detection using the You Only Look Once model via abstraction
