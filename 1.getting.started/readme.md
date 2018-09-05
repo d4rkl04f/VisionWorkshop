@@ -6,7 +6,7 @@ Computer vision using a camera will typically process still images, or still ima
 
 The first step is providing a placeholder for the video. The second step is to get access to the camera on the device, and use that as the video feed. Finally, we need to get access to the pixels of the video feed, which can be accomplished using a canvas element.
 
-## Document Elements
+## :star: Document Elements
 
 Placing a video element into an HTML page is just like placing an image or any other tag. The video tag can react to a number of attributes, most of which we will ignore during this workshop. While we are getting started, we will set the "width" and "height" attributes to fixed values.
 
@@ -15,7 +15,7 @@ Placing a video element into an HTML page is just like placing an image or any o
 
 A canvas element is how we will get content from the video stream for processing. Depending on your use-case for computer vision it is not uncommon to hide one or the other tag from the user. Rarely do you need two visible copies of a video stream coming from a camera.
 
-## Camera Stream
+## :star: Camera Stream
 
 Camera access comes to us via the Stream API, which you may also know a "getUserMedia". It was also envisioned as the "device" element at one point. There is actually a lot to this API. You can enumerate the media options on the device allowing you to discover front-facing and environment-facing cameras, different audio inputs, and more.
 
@@ -36,7 +36,7 @@ The Stream API allows us to get video from the camera as a stream, but then we n
 
 Once we have that video element, we can invoke the Stream API. This is a promise-based API, returning the camera video feed as a stream object. We can then set that stream as the source for the video element, and start playing the content.
 
-## Canvas and Context
+## :star: Canvas and Context
 
 The "canvas" element is generally more well-known for the ability to draw inside a document. It is core to amazing charts, 3D content, and more. That drawing capability will come in handy in capturing snapshots from the video stream. We will want to access the canvas element from various places in our code, so get a reference to it at a scope where it will be visible across functions.
 
@@ -67,7 +67,7 @@ Once we have the stream from the camera, we assigned it as the source of the vid
 
 The first line in this function does that drawing work. The second line uses "requestAnimationFrame" to continue drawing in sync with the browsers repainting thread. We are not doing any additional work at this point, which should yield a frame rate on the canvas that mirrors exactly (as far as the eye can tell), the camera stream in the video element.
 
-## Image Processing
+## :star: Image Processing
 
 Now let us have some fun with the pixels on the canvas. The first step for many computer vision algorithms is actually to remove color from the source image. This is because color often represents noise to those algorithms and makes it harder to perform object detection and the likes. 
 

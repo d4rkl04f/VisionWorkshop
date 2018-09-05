@@ -83,13 +83,13 @@ To remove any previous dropped content we call "clearRect()" on the context obje
 
 > Note that we will still run OCR on the original image, not the canvas. We want as much content to work with as possible to get the best results.
 
-## Tesseract.JS
+## :star: Tesseract.JS
 
 As with most things JavaScript, there are a few libraries that can do OCR in the browser. One library you are likely to encounter is [OCRAD](https://github.com/antimatter15/ocrad.js) by MIT's [Kevin Kwok](https://antimatter15.com/). OCRAD is fast, and basic. You give it an image, it gives you a string of the text it found. 
 
 Another project by Kwok is [Tesseract.JS](http://tesseract.projectnaptha.com/) which is a port of a well-known OCR engine that leverages machine learning techniques. This means the engine is modular and expandable, supporting multiple languages, and gives you additional information such as bounding boxes and baselines for discovered content. We will be using Tesseract.JS for this project.
 
-## Recognizing Text
+## :star: Recognizing Text
 
 With our drag-and-drop background set, we are ready to process an image for textual content. Tesseract.JS makes this extremely straightforward. We will jump in at our "doImageLoad()" handler, and instead of immediately drawing the image onto the canvas element, we will process it for text by calling "Tesseract.recognize()". This method expects a reference to the image element being analyzed, and an object containing any specifics for processing such as the language.
 
@@ -100,7 +100,7 @@ With our drag-and-drop background set, we are ready to process an image for text
 
 Notice that the implementation is promise-based. When run for the first time, a whole series of activities will launch in the background. Then the processing will take place. Finally, our application will be handed results. Many applications may only want the results, but we want to dig in a little further by drawing onto the canvas element what Tesseract.JS actually found.
 
-## Drawing the Results
+## :star: Drawing the Results
 
 The results object is an array of words that Tesseract.JS thinks it found. Depending on the noise in the source image, there could be a lot of extra words, letters, and other characters in which we are not interested. Due to the machine learning underpinnings, each word comes complete with a confidence level. To make our job of rendering more accurate, we can first eliminate any words below a certain confidence.
 

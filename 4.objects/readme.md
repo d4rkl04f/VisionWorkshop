@@ -180,7 +180,7 @@ This allows us to track a single object, and can be expanded to allow for tracki
 
 > This iterative approach is relatively naive. A more robust tracking mechanism would find a closely matching pixel, and then start looking around that pixel for similar matches. When found, the process would expand the bounds of the tracking rectangle, and keep looking in the general area. This is called color clustering.
 
-## Tracking.JS Redux
+## :star: Tracking.JS Redux
 
 Earlier we used TrackingJS to find faces in a video stream. TrackingJS also includes the ability to track color blobs. The setup here follows the same pattern we saw earlier in setting up the camera and getting the video stream onto a canvas. With that boilerplate in place we will need to instantiate TrackingJS, and start tracking colors. When a blob is detected, we will track that blob and render the bounding rectangle to the canvas.
 

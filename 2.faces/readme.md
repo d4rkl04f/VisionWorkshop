@@ -32,7 +32,7 @@ We will want to get references to the video and canvas elements for use in our a
     this.canvas = document.querySelector( 'canvas' );
     this.context = this.canvas.getContext( '2d' );
 
-### Instantiate Tracking
+### :star: Instantiate Tracking
 
 Once included in our document, TrackingJS will show up at the global scope in a namespace called "tracking". Face detection is functionally a special type of object tracking, so we will instantiate an instance of the TrackingJS object tracker, and tell it that we are specifically looking for faces. Depending on your environment, you can tune how the object tracker works. The code example that follows demonstrates using the tuning functions. Last but not least, we start tracking, passing that reference to the video element.
 
@@ -45,7 +45,7 @@ Once included in our document, TrackingJS will show up at the global scope in a 
 
 > You may be wondering "What are 'initial scale' and the other tuning options?" This question is not answered by the documentation. The question has also come up within the repository issues but has never been answered.
 
-### Handle Events
+### :star: Handle Events
 
 When TrackingJS detects faces it will raise a "track" event. TrackingJS provides an "on()" method for attaching event handlers. The emitted event includes a "data" property which is an array of objects representing a rectangle - one element in the array for each found face. The rectangle objects include "x", "y", "width", and "height" which we can then use to highlight by drawing on the canvas.
 

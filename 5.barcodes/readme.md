@@ -15,7 +15,7 @@ From there, the following groups of lines indicate a specific value. Very much l
 
 There are dozens of public and private barcode systems used across the globe. UPC and EAN are more common in commercial settings, while Code 93 and others can be found in industrial settings. These are all generally grouped into "1D" barcodes. Only a single line of pixel data is needed to actually retrieve the value. The other category of barcodes, called "2D" includes QR codes, which we will get to later.
 
-## Zebra Crossing
+## :star: Zebra Crossing
 
 There are a number of libraries for barcode scanning. The most popular is "[Zebra Crossing](https://github.com/zxing/zxing)" which is commonly abbreviated as "ZXing". Originally implemented in Java for Android, ZXing has been ported to many other languages, including [JavaScript](https://github.com/zxing-js/library). ZXing supports many different 1D barcode formats (where documentation permits), as well as a variety of 2D formats including QR codes. The JavaScript port of ZXing even works on mobile devices, which we will get to in a moment.
 

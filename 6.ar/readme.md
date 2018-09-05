@@ -205,7 +205,7 @@ A-Frame will allow us to create a ThreeJS scene, including a custom model, using
 
 Our scene is established using an "a-scene" element. We want to use a custom model with its own material which are considered assets to A-Frame. Then there is the entity to render. You can nest entity elements as needed depending on the effect you desire. On the "a-entity" element we specify the model and material, the scale, and the position of the object. That's it! Now we have a 3D scene using ThreeJS.
 
-## AR.js
+## :star: AR.js
 
 What would be really great is if somebody would extend A-Frame with ARToolkit, allowing us to have complete agemented reality in only a handful of lines of HTML. This is exactly what AR.js brings to the table.
 
