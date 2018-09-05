@@ -73,7 +73,7 @@ class Machine {
   }
 
   // Classify image through Watson
-  async classify( form ) {
+  classify( form ) {
     return fetch( Machine.RECOGNITION, {
       method: 'POST',
       body: form
